@@ -1,0 +1,38 @@
+<div>
+  <h1>Demo for Messaging Service</h1>
+
+  <p>Status : {{state}}</p>
+  
+  <button (click)="sendAction()">SEND</button>
+  
+  <h3>History</h3>
+  <ul>
+    <li *ngFor="let message of messageHistory">{{message}}</li>
+  </ul>
+  <button (click)="realTimeCommunication()">Start Real Time</button>
+  <h1>USER FORM</h1>
+  <form [formGroup]="userProfileSubmitForm" (ngSubmit)="onSubmit(userProfileSubmitForm.value)">
+
+    <div>
+      <label for="name">
+        Name
+      </label>
+      <input id="name" type="text" formControlName="name">
+    </div>
+
+    <div>
+      <label for="age">
+        age
+      </label>
+      <input id="age" type="text" formControlName="age">
+    </div>
+
+    <button class="button" type="submit">Save</button>
+
+  </form>
+
+  <h2>User Listing</h2>
+  <ul *ngFor="let user of usersList">
+    <li>{{user.name}}</li>
+  </ul>
+</div>
