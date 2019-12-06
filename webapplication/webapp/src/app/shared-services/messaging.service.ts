@@ -1,45 +1,31 @@
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Subject } from 'rxjs';
  
-import { StompService, StompConfig, StompState } from "@stomp/ng2-stompjs";
-import { Message } from "@stomp/stompjs";
+import Stomp from 'stompjs';
+import SockJS from 'sockjs-client';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MessagingService {
-  private messages: Observable<Message>;
-  private stompService: StompService;
+  private serverUrl = 'http://localhost:8080/profile/socket'
+  private stompClient;
+  public realtimeSubject = new Subject();
 
-  constructor(socketUrl: string, streamUrl: string) { 
-    let stompConfig: StompConfig = {
-      url: socketUrl,
-      headers: {
-        
-      },
-      heartbeat_in: 0,
-      heartbeat_out: 20000,
-      reconnect_delay: 5000,
-      debug: true
-    };
-
-    // Create Stomp Service
-    this.stompService = new StompService(stompConfig);
-    console.log("CHECK", this.stompService);
-    // Connect to a Stream
-    this.messages = this.stompService.subscribe(streamUrl);
-    console.log("messages::---0", this.messages);
+  constructor() {
+    // this.initializeWebSocketConnection();
   }
-
-  public stream(): Observable<Message> {
-    return this.messages;
-  }
-
-  public send(url: string, message: any) {
-    return this.stompService.publish(url, JSON.stringify(message));
-  }
-
-  public state(): BehaviorSubject<StompState> {
-    return this.stompService.state;
+  
+  initializeWebSocketConnection(){
+    let ws = new SockJS(this.serverUrl, null, { 'protocols_whitelist': ['websocket']});
+    this.stompClient = Stomp.over(ws);
+    let that = this;
+    this.stompClient.connect({}, (frame) => {
+      that.stompClient.subscribe("/topic/server-broadcaster", (message) => {
+        if(message.body) {
+          this.realtimeSubject.next(message.body);
+        }
+      });
+    });
   }
 }
